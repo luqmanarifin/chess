@@ -17,8 +17,13 @@ make run
 ```
 
 Symbol in-game:
+
 H: King
+
 O: Queen
+
 X: Bishop
+
 L: Knight
+
 +: Rook
