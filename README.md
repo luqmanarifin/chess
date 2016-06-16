@@ -2,6 +2,8 @@
 
 A simple chess.
 
+Note: Apabila gambar muncul buruk di terminal Anda, mungkin terminal Anda terlalu kecil.
+
 Screenshot:
 
 ![alt text](http://i.imgur.com/IXqpGNY.png "Screenshot")

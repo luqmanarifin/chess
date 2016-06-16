@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netdb.h> 
+#include <netdb.h>
 
 using namespace std;
 
@@ -38,7 +38,7 @@ void initialize_socket() {
   }
   bzero((char *) &serv_addr, sizeof(serv_addr));
   serv_addr.sin_family = AF_INET;
-  bcopy((char *) server->h_addr, 
+  bcopy((char *) server->h_addr,
        (char *) &serv_addr.sin_addr.s_addr,
        server->h_length);
   serv_addr.sin_port = htons(XINUC_PORT);
@@ -173,7 +173,7 @@ void print(int a_id, int ai, int aj, int b_id, int bi, int bj) {
   int b_sign = get_sign(b_id);
   int abs_a_id = get_abs(a_id);
   int abs_b_id = get_abs(b_id);
-  char buf[30] = {};  
+  char buf[30] = {};
   int len = sprintf(buf, "%c%c%d -> %c%c%d", a_sign? pion[abs_a_id] : pion[abs_a_id] - 'a' + 'A', aj + 'a', BOARD_SIZE - ai
                                            , b_sign? pion[abs_b_id] : pion[abs_b_id] - 'a' + 'A', bj + 'a', BOARD_SIZE - bi);
   print(pt++, 60, (string) buf, 0);
@@ -204,27 +204,28 @@ bool king(int id, bool is_need_printed) {
   return checkmate;
 }
 
-// return true if this bishop attacks enemy's king
-bool bishop(int id, bool is_need_printed) {
+// return true if this bishop/rook/queen attacks enemy's king
+bool contigous_move(int id, bool is_need_printed, vector<pair<int, int>> moves) {
   int sign = get_sign(id);
   int abs_id = get_abs(id);
   int pi = ap[abs_id][sign];
   int pj = bp[abs_id][sign];
   bool checkmate = false;
-  
-  vector<pair<int, int>> moves = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-  for (auto iterator : moves) {
-    int di = iterator.first;
-    int dj = iterator.second;
+
+  for (auto move : moves) {
+    int di = move.first;
+    int dj = move.second;
     int ai = pi + di;
     int aj = pj + dj;
     while (valid(ai, aj)) {
-      if (board[ai][aj] != UNDEF && get_sign(board[ai][aj]) != sign) {
-        if (is_need_printed) {
-          print(id, pi, pj, board[ai][aj], ai, aj);
-        }
-        if (get_abs(board[ai][aj]) == 0) {
-          checkmate = true;
+      if (board[ai][aj] != UNDEF) {
+        if (get_sign(board[ai][aj]) != sign) {
+          if (is_need_printed) {
+            print(id, pi, pj, board[ai][aj], ai, aj);
+          }
+          if (get_abs(board[ai][aj]) == 0) {
+            checkmate = true;
+          }
         }
         break;
       }
@@ -235,35 +236,16 @@ bool bishop(int id, bool is_need_printed) {
   return checkmate;
 }
 
+// return true if this bishop attacks enemy's king
+bool bishop(int id, bool is_need_printed) {
+  vector<pair<int, int>> moves = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+  return contigous_move(id, is_need_printed, moves);
+}
+
 // return true if this rook attacks enemy's king
 bool rook(int id, bool is_need_printed) {
-  int sign = get_sign(id);
-  int abs_id = get_abs(id);
-  int pi = ap[abs_id][sign];
-  int pj = bp[abs_id][sign];
-  bool checkmate = false;
-  
   vector<pair<int, int>> moves = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-  for (auto iterator : moves) {
-    int di = iterator.first;
-    int dj = iterator.second;
-    int ai = pi + di;
-    int aj = pj + dj;
-    while (valid(ai, aj)) {
-      if (board[ai][aj] != UNDEF && get_sign(board[ai][aj]) != sign) {
-        if (is_need_printed) {
-          print(id, pi, pj, board[ai][aj], ai, aj);
-        }
-        if (get_abs(board[ai][aj]) == 0) {
-          checkmate = true;
-        }
-        break;
-      }
-      ai += di;
-      aj += dj;
-    }
-  }
-  return checkmate;
+  return contigous_move(id, is_need_printed, moves);
 }
 
 // return true if this queen attacks enemy's king
@@ -280,7 +262,7 @@ bool knight(int id, bool is_need_printed) {
   int pi = ap[abs_id][sign];
   int pj = bp[abs_id][sign];
   bool checkmate = false;
-  
+
   vector<pair<int, int>> moves = {{1, 2}, {1, -2}, {-1, 2}, {-1, -2}};
   for (auto iterator : moves) {
     int di = iterator.first;
